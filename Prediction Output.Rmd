@@ -24,8 +24,8 @@ testing <- data[-inTrain,]
 
 We will use Random Forests prediction alogorithm on the training data set:
 ```{r}
-modelFit <- train(classe~.,data=training,method="rf",prox=TRUE)
-modelFit
+myctrl <- trainControl(allowParallel=TRUE, method="cv", number=4)
+modelFit <- train(classe~.,data=training,model="rf",trControl=myctrl)
 ```
 
 To test out of sample error we need to predict our model in a new data set (the remaining 40% of observations) as following:
@@ -35,5 +35,8 @@ pred <- predict(modelFit, testing)
 We can then assess the accuracy of our model as following:
 
 ```{r}
-confusionMatrix(pred,testing$classe)
+dd <- confusionMatrix(pred,testing$classe)
+dd
 ```
+
+As we can see from the confusion matrix, the overall accuracy for this model is `r as.numeric(dd$overall['Accuracy'])`

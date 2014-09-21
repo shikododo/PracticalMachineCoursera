@@ -186,14 +186,8 @@ hljs.initHighlightingOnLoad();
 <pre><code class="r">library(caret)
 </code></pre>
 
-<pre><code>## Warning: package &#39;caret&#39; was built under R version 2.15.3
-</code></pre>
-
 <pre><code>## Loading required package: lattice
 ## Loading required package: ggplot2
-</code></pre>
-
-<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 2.15.3
 </code></pre>
 
 <pre><code class="r">set.seed(33833)
@@ -202,30 +196,22 @@ data &lt;- read.csv(&quot;pml-training.csv&quot;)
 
 <p>Some variables should be excluded because most of them are NA:</p>
 
-<pre><code class="r">remove &lt;- apply(data, 2, function(x) sum(is.na(x)))
-data &lt;- data[, names(remove[remove &lt; 1000])]
+<pre><code class="r">remove &lt;- apply(data,2,function(x) sum(is.na(x)))
+data &lt;- data[,names(remove[remove &lt; 1000])]
 </code></pre>
 
 <p>The total number of remaining variables is 93.
 We will then divide this data into training and test sets with 60% of the data in the training set:</p>
 
-<pre><code class="r">inTrain &lt;- createDataPartition(y = data$classe, p = 0.6, list = FALSE)
-training &lt;- data[inTrain, ]
-testing &lt;- data[-inTrain, ]
+<pre><code class="r">inTrain &lt;- createDataPartition(y=data$classe,p=0.6,list=FALSE)
+training &lt;- data[inTrain,]
+testing &lt;- data[-inTrain,]
 </code></pre>
 
 <p>We will use Random Forests prediction alogorithm on the training data set:</p>
 
-<pre><code class="r">modelFit &lt;- train(classe ~ ., data = training, method = &quot;rf&quot;, prox = TRUE)
-</code></pre>
-
-<pre><code>## Error: cannot allocate vector of size 618.6 Mb
-</code></pre>
-
-<pre><code class="r">modelFit
-</code></pre>
-
-<pre><code>## Error: object &#39;modelFit&#39; not found
+<pre><code class="r">myctrl &lt;- trainControl(allowParallel=TRUE, method=&quot;cv&quot;, number=4)
+modelFit &lt;- train(classe~.,data=training,model=&quot;rf&quot;,trControl=myctrl)
 </code></pre>
 
 <p>To test out of sample error we need to predict our model in a new data set (the remaining 40% of observations) as following:</p>
@@ -233,16 +219,51 @@ testing &lt;- data[-inTrain, ]
 <pre><code class="r">pred &lt;- predict(modelFit, testing)
 </code></pre>
 
-<pre><code>## Error: object &#39;modelFit&#39; not found
+<pre><code>## Loading required package: randomForest
+## randomForest 4.6-10
+## Type rfNews() to see new features/changes/bug fixes.
 </code></pre>
 
 <p>We can then assess the accuracy of our model as following:</p>
 
-<pre><code class="r">confusionMatrix(pred, testing$classe)
+<pre><code class="r">dd &lt;- confusionMatrix(pred,testing$classe)
+dd
 </code></pre>
 
-<pre><code>## Error: object &#39;pred&#39; not found
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 2231    5    0    0    0
+##          B    0 1513    1    0    0
+##          C    1    0 1366    4    0
+##          D    0    0    1 1282    0
+##          E    0    0    0    0 1442
+## 
+## Overall Statistics
+##                                         
+##                Accuracy : 0.998         
+##                  95% CI : (0.997, 0.999)
+##     No Information Rate : 0.284         
+##     P-Value [Acc &gt; NIR] : &lt;2e-16        
+##                                         
+##                   Kappa : 0.998         
+##  Mcnemar&#39;s Test P-Value : NA            
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             1.000    0.997    0.999    0.997    1.000
+## Specificity             0.999    1.000    0.999    1.000    1.000
+## Pos Pred Value          0.998    0.999    0.996    0.999    1.000
+## Neg Pred Value          1.000    0.999    1.000    0.999    1.000
+## Prevalence              0.284    0.193    0.174    0.164    0.184
+## Detection Rate          0.284    0.193    0.174    0.163    0.184
+## Detection Prevalence    0.285    0.193    0.175    0.164    0.184
+## Balanced Accuracy       0.999    0.998    0.999    0.998    1.000
 </code></pre>
+
+<p>As we can see from the confusion matrix, the overall accuracy for this model is 0.9985</p>
 
 </body>
 
